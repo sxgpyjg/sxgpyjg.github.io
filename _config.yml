@@ -4,7 +4,7 @@
 # which you are expected to set up once and rarely need to edit after that.
 # For technical reasons, this file is *NOT* reloaded automatically when you use
 # 'jekyll serve'. If you change this file, please restart the server process.
-github_username:    Duter2016
+
 # Site settings
 title: JGY
 brief-intro: Front-end Dev Engineer
@@ -48,10 +48,6 @@ kramdown:
 # port
 # port: 1234
 
-# Jekyll-Search settings 
-# 是否启用jekyll博客搜索插件
-# url: https://github.com/androiddevelop/jekyll-search
-Jekyll-Search: true
 # url
 category_dir: category/
 tag_dir: tag/
