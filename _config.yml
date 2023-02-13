@@ -48,6 +48,10 @@ kramdown:
 # port
 # port: 1234
 
+# Jekyll-Search settings 
+# 是否启用jekyll博客搜索插件
+# url: https://github.com/androiddevelop/jekyll-search
+Jekyll-Search: true
 # url
 category_dir: category/
 tag_dir: tag/
