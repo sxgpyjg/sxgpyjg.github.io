@@ -43,7 +43,36 @@ layout: default
               </li>
             {% endfor %}
         </ul>
+<script src="yourScript.js">
+<!DOCTYPE html>
+<html lang="en">
 
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>复制代码快捷键示例</title>
+</head>
+
+<body>
+    <textarea id="code" rows="10" cols="50"></textarea>
+
+    <script>
+        const codeInput = document.getElementById('code');
+
+        codeInput.addEventListener('keydown', (event) => {
+            if (event.ctrlKey && event.key === 'c') {
+                event.preventDefault(); // 阻止默认复制行为
+                codeInput.select(); // 选中代码框中的内容
+                document.execCommand('copy'); // 执行复制操作
+                alert('代码已复制'); // 弹出提示消息
+            }
+        });
+    </script>
+</body>
+
+</html>
+</script>
 
 
         <!-- Pagination links -->
