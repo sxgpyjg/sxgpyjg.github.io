@@ -1,6 +1,7 @@
 ---
 layout: default
 ---
+
 <div class="page clearfix" index>
     <div class="left">
         <h1>Welcome to JGY's Blog!</h1>
@@ -23,9 +24,11 @@ layout: default
                     <div class="label-card">
                         {% if page.meta %}<i class="fa fa-key"></i>{{ page.meta }}  {% endif %}
                     </div>
+
                     <div class="label-card">
                     {% include category.html %}
                     </div>
+
                     <div class="label-card">
                     {% include tag.html %}
                     </div>
@@ -40,6 +43,9 @@ layout: default
               </li>
             {% endfor %}
         </ul>
+
+
+
         <!-- Pagination links -->
         <div class="pagination">
           {% if paginator.previous_page %}
@@ -73,6 +79,7 @@ layout: default
                     {% endfor %}
                 </ul>
             </div>
+
             <!-- Content -->
             <div class="side ">
                 <div>
@@ -109,11 +116,13 @@ layout: default
                         {% assign min = tag[1].size %}
                       {% endif %}
                     {% endfor %}
+
                     {% if max == min %}
                         {% assign diff = 1 %}
                     {% else %}
                         {% assign diff = max | minus: min %}
                     {% endif %}
+
                     {% for tag in site.tags %}
                       {% assign temp = tag[1].size | minus: min | times: 36 | divided_by: diff %}
                       {% assign base = temp | divided_by: 4 %}
@@ -134,12 +143,14 @@ layout: default
                     {% endfor %}
                 </div>
             </div>
+
             <!-- <div class="side">
                 <div>
                     <i class="fa fa-external-link"></i>
                     Links
                 </div>
                 <ul  class="content-ul">
+
                 </ul>
             </div> -->
         </div>
