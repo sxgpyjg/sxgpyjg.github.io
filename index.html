@@ -8,7 +8,11 @@ layout: default
         <small>这里记录着我的前端学习之路</small>
         <hr>
         <ul>
-            {% for post in paginator.posts %}
+            {% assign all_posts = site.posts | concat: site.articles %}
+{% assign sorted_posts = all_posts | sort: 'date' | reverse %}
+
+{% for post in sorted_posts %}
+
               <li>
                 <h2>
                   <a class="post-link" href="{{ post.url | prepend: site.baseurl }}">{{ post.title }}</a>
