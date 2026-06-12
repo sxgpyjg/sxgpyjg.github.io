@@ -64,3 +64,7 @@ markdown: 克拉姆当
 文章::
 输出：正确: 正确
 永久链接：/：问题/: /:标题/
+collections:
+  articles:
+    output: true
+    permalink: /:title/
