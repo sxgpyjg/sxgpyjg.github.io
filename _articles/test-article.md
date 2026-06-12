@@ -1,9 +1,9 @@
 ---
 layout: post
-title: "测试无日期文章"
-date: 2026-06-12 12:00:00 +0800
+title: "脚本"
+date: 2026-06-11 12:00:00 +0800  # ← 这一行绝对不能少
 categories: test
-hide_date: true
 ---
 
 正文内容。
+
