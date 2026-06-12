@@ -1,70 +1,51 @@
-#欢迎来到哲基尔！
-#
-#此配置文件用于影响整个博客的设置，值
-#，希望您设置一次，之后很少需要编辑。
-#由于技术原因，此文件*不*在您使用时自动重新加载
-#'jekyll服务'。如果您更改此文件，请重新启动服务器进程。
-GitHub_username:    Duter2016
-#站点设置
-标题: JGY
-简介: 前端开发工程师
-baseUrl: "" #您站点的子路径，例如/blog
-URL: "https://sxgpyjg.github.io" #站点的基本主机名和协议
+# Site settings
+title: JGY
+subtitle: 前端开发工程师
+url: "https://sxgpyjg.github.io"
 
-哲基尔主题开曼群岛永久链接/:title/
+# Author
+author: sxgpyjg
+email: sxgpyjg@126.com
 
-#其他链接
-Twitter_username: sxgpyjg126
-Facebook_username: sxgpyjg.water
-GitHub_username:  sxgpyjg
-电子邮件: sxgpyjg@126.com
-微博用户名(_U): 6037610109
-知乎_用户名：sxgpyjg
-LinkedIn_username: sxgpyjg
-Dribbble_username:
+# Social
+github_username: sxgpyjg
+twitter_username: sxgpyjg126
+facebook_username: sxgpyjg.water
+weibo_uid: 6037610109
+zhihu_username: sxgpyjg
+linkedin_username: sxgpyjg
 
-description_footer: 本站记录我前端之旅的沿途风景！
+# Analytics
+baidu_analytics_id: ca17a2a9b68ee5bd7a2334d52e11381d
+google_analytics_id: UA-128880281-1
 
-#个评论
-#两种评论方式，只能选择一种，并使用您自己的短名
-# 两种评论插件，选一个就好了，使用自己的 short_name
-duoshuo_shortname: #hyblog
-Disqus_shortname: sxgpyjg
+# Build settings
+markdown: kramdown
+kramdown:
+  input: GFM
+  syntax_highlighter: rouge
 
-#统计分析统计代码
-# 百度统计 id，将统计代码替换为自己的百度统计id，即
-#hm.src="//hm.baidu.com/hm.js？xxxxxxxxxxxx"；
-#xxxxx字符串
-百度同机id: ca17a2a9b68ee5bd7a2334d52e11381d
-Google_analytics_id: UA-128880281-1#google分析跟踪id
+# Permalinks
+permalink: /:year/:month/:day/:title/
 
-#生成设置
-markdown: 克拉姆当
-
-克拉姆当:
-输入: GFM
-语法高亮显示(_H): 胭脂
-
-#端口
-#端口：1234
-
-#url
-类别目录(_D): 类别/
-标记目录(_D): 标签/
-
-#摘录
-摘录分隔符(_S): "\n\n\n\n"
-
-#分页
-宝石: [哲基尔-浆状]
-分页: 3
-
-主题: 哲基尔主题开曼群岛
-集合:
-文章::
-输出：正确: 正确
-永久链接：/：问题/: /:标题/
+# Collections (Articles)
 collections:
   articles:
     output: true
     permalink: /:title/
+
+# Directories
+categories_dir: categories/
+tags_dir: tags/
+
+# Excerpt
+excerpt_separator: "\n\n\n\n"
+
+# Pagination
+plugins:
+  - jekyll-paginate
+paginate: 3
+paginate_path: "/page/:num/"
+
+# Theme
+theme: jekyll-theme-cayman
