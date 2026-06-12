@@ -1,7 +1,19 @@
 ---
 layout: default
 ---
-
+<!-- 文章编辑与Markdown源码 -->
+		                <div style="width: 312px;
+		                background-color:#fff;
+		                border: 1px solid #ddd;
+			        margin: 2px 0px 0px 15px;
+                                padding: 0px;
+		                border-radius: 6px 6px 6px 6px;
+		                -moz-border-radius: 6px 6px 6px 6px;
+		                -webkit-border-radius: 6px 6px 6px 6px;" text-align="center">
+                                <a href="https://github.com/sxgpyjg/sxgpyjg.github.io/new/master/_posts" target="_blank"><i class="fa fa-pencil-square"></i>「创建博客」</a>
+		                <a href="//github.com/{{ site.github_username }}/{{ site.github_username }}.github.io/blob/master/{{ page.path }}" target="_blank" title="编辑本文" ><i class="fa fa-pencil-square-o"></i>「编辑」</a>
+		                <a href="//raw.githubusercontent.com/{{ site.github_username }}/{{ site.github_username }}.github.io/master/{{ page.path }}" target="_blank" title="查看本文Markdown源码" ><i class="fa fa-book"></i>「本文源码」</a>
+		                </div>
 <div class="page clearfix" post>
     <div class="left">
         <h1>{{page.title}}</h1>
@@ -36,8 +48,9 @@ layout: default
         <hr>
 
         {% include pay.html %}
-
+        
         <hr>
+
         {% assign hasSimilar = '' %}
         {% for post in site.related_posts %}
             {% assign postHasSimilar = false %}
@@ -45,11 +58,11 @@ layout: default
                 {% for thisTag in page.tags %}
                     {% if postHasSimilar == false and hasSimilar.size < 6 and post != page and tag == thisTag %}
                         {% if hasSimilar.size == 0 %}
-                        <h2 id="similar_posts">类似文章</h2>
+                        <h2 id="similar_posts">类似帖子</h2>
                         <ul>
                         {% endif %}
                         <li class="relatedPost">
-                            <a href="{{ site.url }}{{ post.url }}">{{ post.title }}
+                            <a href="{{ site.baseurl }}{{ post.url }}">{{ post.title }}
                             {% if post.series %}
                                 (Series: {{ post.series }})
                             {% endif %}
@@ -64,13 +77,11 @@ layout: default
         {% if hasSimilar.size > 0 %}
             </ul>
         {% endif %}
-        
-        
 
         {% include previousAndNext.html %}
 
-        <h2 id="comments">留言</h2>
-        {% include gitment.html %}
+        <h2 id="comments">发布评论</h2>
+        {% include comments.html %}
 
 
     </div>
@@ -81,11 +92,13 @@ layout: default
             <!-- Content -->
             <div class="side content">
                 <div>
-                    目录
+                    Content
                 </div>
                 <ul id="content-side" class="content-ul">
-                    <li><a href="#similar_posts">类似文章</a></li>
-                    <li><a href="#comments">留言</a></li>
+                    {% if hasSimilar.size > 0 %}
+                    <li><a href="#similar_posts">Similar Posts</a></li>
+                    {% endif %}
+                    <li><a href="#comments">Comments</a></li>
                 </ul>
             </div>
             <!-- 其他div框放到这里 -->
