@@ -11,7 +11,7 @@ brief-intro: Front-end Dev Engineer
 baseurl: "" # the subpath of your site, e.g. /blog
 url: "https://sxgpyjg.github.io" # the base hostname & protocol for your site
 
-permalink: /:year/:month/:day/:title/
+permalink: /:title/
 
 # other links
 twitter_username: sxgpyjg126
