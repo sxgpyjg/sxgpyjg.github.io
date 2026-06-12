@@ -7,12 +7,13 @@ layout: default
         <h1>Welcome to JGY's Blog!</h1>
         <small>这里记录着我的前端学习之路</small>
         <hr>
+
+        <!-- 文章主列表（已支持 posts + articles） -->
         <ul>
             {% assign all_posts = site.posts | concat: site.articles %}
-{% assign sorted_posts = all_posts | sort: 'date' | reverse %}
+            {% assign sorted_posts = all_posts | sort: 'date' | reverse %}
 
-{% for post in sorted_posts %}
-
+            {% for post in sorted_posts %}
               <li>
                 <h2>
                   <a class="post-link" href="{{ post.url | prepend: site.baseurl }}">{{ post.title }}</a>
@@ -22,70 +23,54 @@ layout: default
                         <i class="fa fa-calendar"></i>{{ post.date | date: "%F" }}
                     </div>
                     <div class="label-card">
-                        {% if post.author %}<i class="fa fa-user"></i>{{ post.author }}
-                        {% endif %}
+                        {% if post.author %}<i class="fa fa-user"></i>{{ post.author }}{% endif %}
                     </div>
                     <div class="label-card">
-                        {% if page.meta %}<i class="fa fa-key"></i>{{ page.meta }}  {% endif %}
+                        {% if page.meta %}<i class="fa fa-key"></i>{{ page.meta }}{% endif %}
                     </div>
-
                     <div class="label-card">
-                    {% include category.html %}
+                        {% include category.html %}
                     </div>
-
                     <div class="label-card">
-                    {% include tag.html %}
+                        {% include tag.html %}
                     </div>
                 </div>
                 <div class="excerpt">
-                    {{post.excerpt}}
+                    {{ post.excerpt }}
                 </div>
                 <div class="read-all">
-                    <a  href="{{ post.url | prepend: site.baseurl }}"><i class="fa fa-newspaper-o"></i>Read All</a>
+                    <a href="{{ post.url | prepend: site.baseurl }}">
+                        <i class="fa fa-newspaper-o"></i>Read All
+                    </a>
                 </div>
                 <hr>
               </li>
             {% endfor %}
         </ul>
 
-
-
-        <!-- Pagination links -->
-        <div class="pagination">
-          {% if paginator.previous_page %}
-            <a href="/index.html" class="previous"><i class="fa fa-angle-double-left"></i></a>
-            <a href="{{ paginator.previous_page_path | prepend: site.baseurl }}" class="previous"><i class="fa fa-angle-left"></i></a>
-          {% else %}
-            <span class="previous disable"><i class="fa fa-angle-double-left"></i></span>
-            <span class="previous disable"><i class="fa fa-angle-left"></i></span>
-          {% endif %}
-          <span class="page_number ">{{ paginator.page }}/{{ paginator.total_pages }}</span>
-          {% if paginator.next_page %}
-            <a href="{{ paginator.next_page_path }}" class="next"><i class="fa fa-angle-right"></i></a>
-            <a href="{{ site.baseurl }}/page{{ paginator.total_pages }}" class="next"><i class="fa fa-angle-double-right"></i></a>
-          {% else %}
-            <span class="next disable"><i class="fa fa-angle-right"></i></span>
-            <span class="next disable"><i class="fa fa-angle-double-right"></i></span>
-          {% endif %}
-        </div>
+        <!-- ❌ 已移除分页代码（与 collections 冲突） -->
     </div>
-    <!-- <button class="anchor"><i class="fa fa-anchor"></i></button> -->
+
+    <!-- 右侧边栏 -->
     <div class="right">
         <div class="wrap">
+            <!-- Recent Posts（已修复为支持 articles） -->
             <div class="side">
                 <div>
                     <i class="fa fa-pencil-square-o" aria-hidden="true"></i>
                     Recent Posts
                 </div>
                 <ul class="content-ul" recent>
-                    {% for post in site.posts offset: 0 limit: 10  %}
+                    {% assign recent_posts = site.posts | concat: site.articles %}
+                    {% assign recent_sorted = recent_posts | sort: 'date' | reverse %}
+                    {% for post in recent_sorted limit: 10 %}
                         <li><a href="{{ site.baseurl }}{{ post.url }}">{{ post.title }}</a></li>
                     {% endfor %}
                 </ul>
             </div>
 
-            <!-- Content -->
-            <div class="side ">
+            <!-- Categories -->
+            <div class="side">
                 <div>
                     <i class="fa fa-th-list"></i>
                     Categories
@@ -93,17 +78,17 @@ layout: default
                 <ul class="content-ul" cate>
                     {% for category in site.categories %}
                     <li>
-                        <a href="{{ root_url }}/{{ site.category_dir }}#{{ category | first }}" class="categories-list-item" cate="{{ category | first }}">
-                            <span class="name">
-                                {{ category | first }}
-                            </span>
+                        <a href="{{ root_url }}/{{ site.category_dir }}#{{ category | first }}"
+                           class="categories-list-item" cate="{{ category | first }}">
+                            <span class="name">{{ category | first }}</span>
                             <span class="badge">{{ category | last | size }}</span>
                         </a>
                     </li>
                     {% endfor %}
                 </ul>
             </div>
-            <!-- 其他div框放到这里 -->
+
+            <!-- Tags -->
             <div class="side">
                 <div>
                     <i class="fa fa-tags"></i>
@@ -121,44 +106,20 @@ layout: default
                       {% endif %}
                     {% endfor %}
 
-                    {% if max == min %}
-                        {% assign diff = 1 %}
-                    {% else %}
-                        {% assign diff = max | minus: min %}
-                    {% endif %}
-
+                    {% assign diff = max | minus: min | default: 1 %}
                     {% for tag in site.tags %}
                       {% assign temp = tag[1].size | minus: min | times: 36 | divided_by: diff %}
                       {% assign base = temp | divided_by: 4 %}
                       {% assign remain = temp | modulo: 4 %}
-                      {% if remain == 0 %}
-                        {% assign size = base | plus: 9 %}
-                      {% elsif remain == 1 or remain == 2 %}
-                        {% assign size = base | plus: 9 | append: '.5' %}
-                      {% else %}
-                        {% assign size = base | plus: 10 %}
-                      {% endif %}
-                      {% if remain == 0 or remain == 1 %}
-                        {% assign color = 9 | minus: base %}
-                      {% else %}
-                        {% assign color = 8 | minus: base %}
-                      {% endif %}
-                      <a href="{{ root_url }}/{{ site.tag_dir }}#{{ tag[0] }}" style="font-size: {{ size }}pt; color: #{{ color }}{{ color }}{{ color }};">{{ tag[0] }}</a>
+                      {% assign size = base | plus: 9 %}
+                      {% assign color = 9 | minus: base %}
+                      <a href="{{ root_url }}/{{ site.tag_dir }}#{{ tag[0] }}"
+                         style="font-size: {{ size }}pt; color: #{{ color }}{{ color }}{{ color }};">
+                        {{ tag[0] }}
+                      </a>
                     {% endfor %}
                 </div>
             </div>
-
-            <!-- <div class="side">
-                <div>
-                    <i class="fa fa-external-link"></i>
-                    Links
-                </div>
-                <ul  class="content-ul">
-
-                </ul>
-            </div> -->
         </div>
     </div>
 </div>
-<!-- <script src="{{ "/js/scroll.min.js " | prepend: site.baseurl }}" charset="utf-8"></script> -->
-<!-- <script src="{{ "/js/pageContent.js " | prepend: site.baseurl }}" charset="utf-8"></script> -->
