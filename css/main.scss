@@ -65,3 +65,23 @@ pre.line-numbers {
   color: #888;
 }
 
+/* ===== Prism 代码行号（强制显示） ===== */
+pre.line-numbers {
+  position: relative;
+  padding-left: 3.5em !important;
+}
+
+.line-numbers .line-numbers-rows {
+  position: absolute;
+  left: 0;
+  top: 1em;
+  width: 2.5em;
+  border-right: 1px solid #444;
+  color: #888;
+  text-align: right;
+  pointer-events: none;
+}
+
+.line-numbers .line-numbers-rows span {
+  display: block;
+}
