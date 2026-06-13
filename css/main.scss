@@ -55,33 +55,4 @@
 // 就再次回到这列车上
 // 我们谈天说地
 // 把酒言欢，赠予你新路途纹银
-/* ===== Prism 代码行号（最终版） ===== */
-pre.line-numbers {
-  position: relative !important;
-  padding-left: 3.8em !important; /* 预留足够空间 */
-  counter-reset: linenumber;
-}
-
-.line-numbers .line-numbers-rows {
-  position: absolute !important;
-  left: 0 !important;
-  top: 1em !important;
-  width: 3em !important;
-  border-right: 1px solid #555 !important;
-  color: #888 !important; /* 确保颜色不是透明 */
-  text-align: right;
-  pointer-events: none;
-  user-select: none;
-}
-
-.line-numbers .line-numbers-rows span {
-  display: block !important;
-  counter-increment: linenumber;
-  padding-right: 0.8em;
-}
-
-/* 利用伪元素显示数字，比 JS 生成的更稳 */
-.line-numbers .line-numbers-rows span::before {
-  content: counter(linenumber);
-}
 
