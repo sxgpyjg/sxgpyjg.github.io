@@ -55,33 +55,3 @@
 // 就再次回到这列车上
 // 我们谈天说地
 // 把酒言欢，赠予你新路途纹银
-/* ===== Prism 代码行号 ===== */
-pre.line-numbers {
-  padding-left: 3.5em !important;
-}
-
-.line-numbers .line-numbers-rows {
-  border-right: 1px solid #444;
-  color: #888;
-}
-
-/* ===== Prism 代码行号（强制显示） ===== */
-pre.line-numbers {
-  position: relative;
-  padding-left: 3.5em !important;
-}
-
-.line-numbers .line-numbers-rows {
-  position: absolute;
-  left: 0;
-  top: 1em;
-  width: 2.5em;
-  border-right: 1px solid #444;
-  color: #888;
-  text-align: right;
-  pointer-events: none;
-}
-
-.line-numbers .line-numbers-rows span {
-  display: block;
-}
