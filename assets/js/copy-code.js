@@ -1,13 +1,16 @@
+
 document.addEventListener('DOMContentLoaded', function () {
 
-  // ✅ 遍历所有代码块
-  document.querySelectorAll('pre.highlight').forEach(function (pre) {
-
-  // ✅ 复制按钮
+  // ✅ 只处理代码块
   document.querySelectorAll('pre.highlight').forEach(function (block) {
+
+    // ❌ 确保不会误加行号
+    block.classList.remove('line-numbers');
+
     var code = block.querySelector('code');
     if (!code) return;
 
+    // ✅ 复制按钮
     var btn = document.createElement('button');
     btn.className = 'btn-copy';
     btn.textContent = '复制';
@@ -21,10 +24,10 @@ document.addEventListener('DOMContentLoaded', function () {
       });
     };
 
+    block.style.position = 'relative';
     block.appendChild(btn);
   });
 
   // ✅ 防闪屏
   document.documentElement.classList.add('code-ready');
 });
-
