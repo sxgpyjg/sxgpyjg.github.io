@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>撰写助手</title>
+<style>
+body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI";background:#f5f7fa;margin:0;padding:20px}
+.container{max-width:900px;margin:auto;background:#fff;padding:20px;border-radius:12px;box-shadow:0 4px 20px rgba(0,0,0,.08)}
+input,textarea,button{padding:10px;border-radius:8px;border:1px solid #ddd;width:100%;margin-top:10px;font-size:15px}
+button{background:#4f46e5;color:#fff;border:none;cursor:pointer}
+button:hover{background:#4338ca}
+.preview img{max-width:120px;margin:5px;border-radius:8px}
+.section{margin-top:20px}
+pre{background:#1e1e1e;color:#d4d4d4;padding:15px;border-radius:8px;overflow:auto}
+.hidden{display:none}
+</style>
+</head>
+<body>
+
+<div class="container" id="loginBox">
+  <h2>🔒 请输入密码</h2>
+  <input id="pwd" type="password" placeholder="密码">
+  <button onclick="checkPwd()">进入</button>
+</div>
+
+<div class="container hidden" id="mainBox">
+  <h2>📝 撰写助手</h2>
+
+  <div class="section">
+    <button onclick="document.getElementById('imgs').click()">🖼️ 选择图片</button>
+    <input type="file" id="imgs" multiple accept="image/*" style="display:none">
+    <div id="preview" class="preview"></div>
+  </div>
+
+  <div class="section">
+    <label>📄 正文</label>
+    <textarea id="text" rows="8" placeholder="写点什么..."></textarea>
+  </div>
+
+  <div class="section">
+    <label>💻 代码</label>
+    <textarea id="code" rows="6" placeholder="贴代码..."></textarea>
+  </div>
+
+  <button onclick="generate()">✨ 生成文件</button>
+  <button onclick="copy()">📋 一键复制</button>
+  <button onclick="download()">⬇️ 下载文件</button>
+  <button onclick="clearAll()">🗑️ 清空</button>
+
+  <pre id="output"></pre>
+</div>
+
+<script>
+const CORRECT_PWD = "yjg2025";
+
+function checkPwd(){
+  if(document.getElementById("pwd").value === CORRECT_PWD){
+    document.getElementById("loginBox").classList.add("hidden");
+    document.getElementById("mainBox").classList.remove("hidden");
+  } else alert("密码错误");
+}
+
+let files = [];
+
+document.getElementById("imgs").onchange = e => {
+  [...e.target.files].forEach(f => {
+    files.push(f);
+    const r = new FileReader();
+    r.onload = ev => {
+      const img = document.createElement("img");
+      img.src = ev.target.result;
+      document.getElementById("preview").appendChild(img);
+    };
+    r.readAsDataURL(f);
+  });
+};
+
+function generate(){
+  let out = "📝 正文\n\n" + document.getElementById("text").value + "\n\n";
+  out += "💻 代码\n\n```\n" + document.getElementById("code").value + "\n```\n\n";
+  out += "🖼️ 图片 (" + files.length + " 张)\n";
+  document.getElementById("output").textContent = out;
+}
+
+function copy(){
+  navigator.clipboard.writeText(document.getElementById("output").textContent);
+  alert("已复制");
+}
+
+function download(){
+  const blob = new Blob([document.getElementById("output").textContent], {type:"text/plain"});
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = "撰写_" + Date.now() + ".txt";
+  a.click();
+}
+
+function clearAll(){
+  files = [];
+  document.getElementById("preview").innerHTML = "";
+  document.getElementById("text").value = "";
+  document.getElementById("code").value = "";
+  document.getElementById("output").textContent = "";
+}
+</script>
+</body>
+</html>

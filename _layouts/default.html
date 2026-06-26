@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html>
+
+  {% include head.html %}
+
+  <body>
+
+    {% include header.html %}
+
+        {{ content }}
+
+    {% include footer.html %}
+    {% include backToTop.html %}
+
+    <script src="{{ '/js/main.js' | prepend: site.baseurl }}"></script>
+    <script src="{{ '/js/smooth-scroll.min.js' | prepend: site.baseurl }}"></script>
+
+    <script type="text/javascript">
+      smoothScroll.init({
+        speed: 500,
+        easing: 'easeInOutCubic',
+        offset: 20,
+      });
+    </script>
+
+    <!-- ✅ Prism 行号插件 -->
+    <script src="https://cdn.jsdelivr.net/npm/prismjs/plugins/line-numbers/prism-line-numbers.min.js"></script>
+
+    <!-- ✅ 你的复制按钮逻辑 -->
+    <script src="{{ '/assets/js/copy-code.js' | prepend: site.baseurl }}"></script>
+
+    <!-- 鼠标点击爱心动画 -->
+    <script type="text/javascript" src="/js/src/love.js"></script>
+
+  </body>
+</html>

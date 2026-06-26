@@ -1,0 +1,987 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>博客可视化编辑（vivo多选终极兼容版）</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;font-family:system-ui}
+body{padding:15px;background:#f5f7fa;color:#222;transition:background 0.3s,color 0.3s}
+body.dark{background:#161a23;color:#eee}
+.box{background:#fff;border-radius:12px;padding:20px;max-width:600px;margin:0 auto 20px;transition:background 0.3s}
+body.dark .box{background:#222733}
+h3,h4{margin-bottom:12px;color:#222}
+body.dark h3,body.dark h4{color:#eee}
+input,textarea{width:100%;padding:10px;margin:8px 0;border:1px #ddd solid;border-radius:6px;font-size:16px;background:#fff;color:#222;transition:background 0.3s,color 0.3s}
+body.dark input,body.dark textarea{background:#2d3440;border-color:#444;color:#eee}
+input:focus,textarea:focus{border-color:#2563eb;outline:1px solid rgba(37,99,235,0.2)}
+textarea{min-height:80px;line-height:1.5}
+
+.main-gen-btn{
+    padding:12px 20px;background:#2563eb;color:#fff;border:none;border-radius:6px;
+    width:100%;font-size:16px;margin-top:8px;transition:all 0.1s ease;
+}
+.main-gen-btn:active{transform:scale(0.96);filter:brightness(0.88);}
+.main-gen-btn.loading{opacity:0.6;pointer-events:none;}
+
+.copy-green{background:#099441;}
+.danger-btn{background:#e53935;}
+.theme-btn{background:#6366f1;}
+.batch-btn{background:#f59e0b;}
+.blue-btn{background:#2563eb;}
+/* 一行按钮完全等宽均分 修复长短文字导致尺寸不一致 */
+.mini-row{display:flex;gap:8px;margin:8px 0;flex-wrap:wrap;}
+.mini-row button{
+    flex:1 1 0;
+    padding:8px;border:none;border-radius:6px;color:#fff;font-size:14px;
+    min-width:0;text-align:center;
+    white-space:normal;
+    margin-top:10px;
+}
+.mini-row button:active{transform:scale(0.96);filter:brightness(0.88);}
+
+#previewImg{max-width:100%;max-height:300px;margin:10px 0;border-radius:8px;display:block}
+
+/* 优化代码框：移动端顺滑触摸左右滑动、加高、横向滚动、手机便捷选中 */
+.code-box{
+    width:100%;
+    min-height:180px;
+    max-height:480px;
+    background:#111;
+    padding:12px;
+    border-radius:6px;
+    font-family:monospace;font-size:14px;
+    white-space:pre;
+    overflow:auto;
+    overflow-x:auto;
+    outline:none;
+    word-break:unset;
+    line-height:1.6;
+    transition:background 0.3s;
+    -webkit-user-select:text;
+    user-select:text;
+    /* 移动端顺滑触摸滚动核心 */
+    -webkit-overflow-scrolling:touch;
+    touch-action:pan-x pan-y;
+    overscroll-behavior:contain;
+    will-change:scroll-position;
+}
+body.dark .code-box{background:#0a0a0a}
+.cmd-box{color:#4cf;background:#1a1a1a;}
+.json-box{color:#0f0;background:#111;}
+
+.lock-box{max-width:400px;margin:30px auto;text-align:center;}
+.tip{font-size:13px;color:#999;margin:6px 0;line-height:1.4}
+.count-tip{text-align:right;font-size:13px;color:#666;margin-top:-6px}
+body.dark .count-tip{color:#aaa}
+
+/* 本地图列表 + 拖拽 */
+.file-item{
+    display:flex;justify-content:space-between;align-items:center;
+    background:#f0f2f5;padding:12px 12px;border-radius:6px;margin:6px 0;font-size:14px;
+    cursor:pointer;user-select:none;transition:all .15s;min-height:44px;
+}
+body.dark .file-item{background:#2d3440}
+.file-item:hover,.file-item.active{background:#dbeafe;box-shadow:inset 3px 0 0 #2563eb;}
+body.dark .file-item:hover,body.dark .file-item.active{background:#273b5c}
+.file-item .remove{cursor:pointer;color:#e74c3c;font-weight:bold;margin-left:10px;padding:6px 10px;user-select:none;}
+.file-name{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:75%;}
+.drag-handle{margin-right:6px;color:#888;font-weight:bold;user-select:none;}
+
+/* 图床列表 支持拖拽 */
+.imgur-item{
+    background:#f0f2f5;padding:12px;border-radius:6px;margin:6px 0;cursor:pointer;
+    transition:all .15s;min-height:44px;
+    display:flex;
+    align-items:center;
+    gap:8px;
+}
+body.dark .imgur-item{background:#2d3440}
+.imgur-item.active{background:#dbeafe;box-shadow:inset 3px 0 0 #2563eb;}
+body.dark .imgur-item.active{background:#273b5c}
+.imgur-item input,.imgur-item textarea{margin-top:6px;flex:1;}
+.url-error{border-color:#e53935 !important;}
+.imgur-drag-handle{color:#888;font-weight:bold;user-select:none;cursor:grab;}
+
+/* Toast提示 */
+#toast{
+    position:fixed;top:20px;left:50%;transform:translateX(-50%);
+    background:rgba(0,0,0,0.75);color:#fff;padding:10px 20px;border-radius:99px;
+    z-index:9999;opacity:0;transition:opacity 0.2s;pointer-events:none;
+}
+#toast.show{opacity:1;}
+
+/* 拖拽悬浮 */
+.file-item.drag-over,.imgur-item.drag-over{background:#bfdbfe !important;}
+.file-item.dragging,.imgur-item.dragging{opacity:0.4;}
+
+/* 拖拽上传提示 */
+.drop-hint{
+    border:2px dashed #2563eb;padding:15px;text-align:center;border-radius:8px;margin:8px 0;color:#666;
+}
+body.dark .drop-hint{color:#aaa}
+
+/* 新增：标签输入框样式 */
+.tag-input{
+    margin-top:6px;
+}
+/* 收藏勾选框样式 */
+.star-check-row{
+    display:flex;align-items:center;gap:8px;margin:10px 0;
+}
+.star-check-row input{
+    width:auto;margin:0;
+}
+/* 编辑提示栏优化样式：标题缩小+链接展开样式 */
+#editModeTip h4 {
+    font-size:14px;
+    margin:0 0 8px 0;
+    color:#2563eb;
+    font-weight:600;
+}
+#editModeUrl {
+    font-family:monospace;
+    font-size:12px;
+    color:#666;
+    overflow:hidden;
+    text-overflow:ellipsis;
+    white-space:nowrap;
+    cursor:pointer;
+    transition:all 0.25s ease;
+}
+#editModeUrl.expanded {
+    white-space:normal;
+    word-break:break-all;
+    background:rgba(255,255,255,0.95);
+    border-radius:6px;
+    padding:8px;
+    margin:4px -4px -4px -4px;
+}
+body.dark #editModeUrl {
+    color:#aaa;
+}
+body.dark #editModeUrl.expanded {
+    background:rgba(255,255,255,0.08);
+}
+</style>
+</head>
+<body>
+<div id="toast"></div>
+
+<div class="lock-box" id="lockBox">
+    <div class="box">
+        <h3>请输入访问密码</h3>
+        <input type="password" id="pwdInput" placeholder="输入密码">
+        <label style="display:block;text-align:left;margin:6px 0;font-size:14px;color:#666;">
+            <input type="checkbox" id="rememberPwd"> 记住密码
+        </label>
+        <button class="main-gen-btn" onclick="checkPwd()">解锁编辑面板</button>
+    </div>
+</div>
+
+<div id="editPanel" style="display:none;">
+    <div class="mini-row">
+        <button class="theme-btn" onclick="toggleTheme()">切换深色/浅色</button>
+        <button class="danger-btn" onclick="resetAllCache()">重置全部缓存</button>
+    </div>
+
+    <!-- 优化后编辑模式提示栏：标题缩小 + 链接可展开/收起 -->
+    <div class="box" id="editModeTip" style="background:#dbeafe;display:none;padding:16px;">
+        <h4 id="modeTipText">正在编辑已有图文</h4>
+        <div id="editModeUrl">暂无图片链接</div>
+    </div>
+
+    <div class="box">
+      <h3>选择图片（最多5张，保留真实文件名）</h3>
+      <p class="tip">📱vivo浏览器操作：弹出窗口点右上角【文件管理】，长按图片即可批量多选；若只能单选请重新授予浏览器全部文件权限</p>
+      <div class="drop-hint" id="dropArea">拖拽图片到此处快速添加</div>
+      <!-- 移除accept属性，vivo完美兼容多选 -->
+      <input type="file" id="imgFile" multiple>
+      <img id="previewImg" hidden>
+      <div class="mini-row">
+          <button class="danger-btn" onclick="clearAllLocal()">清空全部本地图片</button>
+      </div>
+      <div class="file-list" id="fileList"></div>
+    </div>
+
+    <div class="box">
+      <h3>图文信息（点上方任意项即可编辑）</h3>
+      <div id="sharedInputs"></div>
+      <!-- 新增标签输入框 -->
+      <input class="tag-input" id="tagInput" placeholder="标签，多标签英文逗号分隔：风景,人像,晚霞">
+
+      <!-- 新增收藏勾选框 -->
+      <div class="star-check-row" id="starCheckWrap" style="display:none;">
+          <input type="checkbox" id="editStar">
+          <label for="editStar">⭐ 收藏本条图文</label>
+      </div>
+
+      <hr style="margin:12px 0;border:none;border-top:1px dashed #ddd;">
+
+      <div class="mini-row">
+          <button class="copy-green" onclick="addImgur()">+ 单条图床地址</button>
+          <button class="batch-btn" onclick="batchPasteImgur()">批量粘贴URL</button>
+          <button class="danger-btn" onclick="clearAllImgur()">清空全部图床</button>
+      </div>
+      <div class="imgur-list" id="imgurList" style="margin-top:10px;"></div>
+
+      <div class="mini-row">
+          <input placeholder="日期 例：2026.06.18 周四 18:30" id="time">
+          <button class="danger-btn" onclick="fillToday()">当前时间</button>
+      </div>
+
+      <div class="mini-row">
+          <button class="batch-btn" onclick="batchFillAll()">批量统一标题/描述</button>
+      </div>
+
+      <button class="main-gen-btn" onclick="genAll()">生成 JSON + 命令</button>
+    </div>
+
+    <div class="box">
+      <h3>✅ Termux 命令（可直接左右滑动编辑）</h3>
+      <div class="code-box cmd-box" id="cmdText" contenteditable="true">点击上方按钮生成</div>
+      <div class="mini-row">
+          <button class="copy-green" onclick="copyCmd()">复制命令</button>
+      </div>
+    </div>
+
+    <div class="box">
+      <h3>⚠️ JSON（可直接左右滑动编辑）</h3>
+      <div class="code-box json-box" id="jsonText" contenteditable="true"></div>
+      <!-- 三个按钮全部统一mini-row，无任何行内样式干扰，三等分宽度 -->
+      <div class="mini-row">
+          <button class="copy-green" onclick="copyJson()">复制 JSON</button>
+          <button class="blue-btn" onclick="checkJsonValid()">校验JSON</button>
+          <button class="batch-btn" onclick="downloadJson()">下载JSON文件</button>
+      </div>
+    </div>
+</div>
+
+<script>
+const lockPassword = "123456";
+let genLock = false;
+let dragIndex = null;
+// 新增图床拖拽索引
+let imgurDragIndex = null;
+// 编辑页当前图片链接全局变量（复制链接用）
+let currentEditImgUrl = "";
+// 链接展开状态标记
+let urlExpanded = false;
+// 软键盘resize防抖定时器
+let resizeTimer = null;
+
+/* ===== 本地图片 ===== */
+let fileList = [];
+let currentLocalIndex = -1;
+
+/* ===== 图床 ===== */
+let imgurList = [];
+let currentImgurIndex = -1;
+
+// 新增：相册传参全局变量
+let editFromAlbum = false;
+let albumOriginData = null;
+
+// Toast弹窗
+function showToast(msg){
+    const t = document.getElementById('toast');
+    t.innerText = msg;
+    t.classList.add('show');
+    setTimeout(()=>t.classList.remove('show'),2200);
+}
+
+// 切换链接展开/收起
+function toggleEditUrl(){
+    const urlBox = document.getElementById('editModeUrl');
+    urlExpanded = !urlExpanded;
+    urlBox.classList.toggle('expanded', urlExpanded);
+}
+
+// 复制编辑链接函数
+function copyEditUrl(){
+    if(!currentEditImgUrl) return;
+    navigator.clipboard.writeText(currentEditImgUrl).then(()=>{
+        showToast("图片链接已复制");
+    }).catch(()=>{
+        showToast("复制失败，请手动选中链接复制");
+    });
+}
+
+// 主题切换
+function toggleTheme(){
+    document.body.classList.toggle('dark');
+    localStorage.setItem('darkMode', document.body.classList.contains('dark'));
+}
+function loadTheme(){
+    if(localStorage.getItem('darkMode') === 'true'){
+        document.body.classList.add('dark');
+    }
+}
+
+// 持久化缓存
+function saveStorage(){
+    const data = {
+        fileList: fileList.map(f=>({name:f.name,title:f.title,desc:f.desc,source:f.source})),
+        imgurList,
+        currentLocalIndex,
+        currentImgurIndex,
+        time: document.getElementById('time').value,
+        tags: document.getElementById('tagInput').value
+    }
+    localStorage.setItem('blogEditorData', JSON.stringify(data));
+}
+function loadStorage(){
+    const raw = localStorage.getItem('blogEditorData');
+    if(!raw) return;
+    try{
+        const d = JSON.parse(raw);
+        fileList = d.fileList || [];
+        imgurList = d.imgurList || [];
+        currentLocalIndex = d.currentLocalIndex ?? -1;
+        currentImgurIndex = d.currentImgurIndex ?? -1;
+        document.getElementById('time').value = d.time || '';
+        document.getElementById('tagInput').value = d.tags || '';
+    }catch(e){console.log('缓存读取失败',e)}
+}
+// 重置全部缓存
+function resetAllCache(){
+    localStorage.removeItem('blogEditorData');
+    localStorage.removeItem('rememberPwd');
+    localStorage.removeItem('darkMode');
+    location.reload();
+}
+// 记住密码
+function savePwdRemember(){
+    const ck = document.getElementById('rememberPwd').checked;
+    localStorage.setItem('rememberPwd', ck ? lockPassword : '');
+}
+function loadPwdRemember(){
+    const p = localStorage.getItem('rememberPwd');
+    if(p && p === lockPassword){
+        document.getElementById('rememberPwd').checked = true;
+        document.getElementById('pwdInput').value = lockPassword;
+    }
+}
+
+function fillToday(){
+    const t = document.getElementById("time"), now = new Date();
+    const y=now.getFullYear(), m=String(now.getMonth()+1).padStart(2,'0'),
+          d=String(now.getDate()).padStart(2,'0'), h=String(now.getHours()).padStart(2,'0'),
+          min=String(now.getMinutes()).padStart(2,'0');
+    t.value = `${y}.${m}.${d} 周${["日","一","二","三","四","五","六"][now.getDay()]} ${h}:${min}`;
+    saveStorage();
+}
+
+function checkPwd(){
+    const input = document.getElementById('pwdInput').value;
+    if(input === lockPassword){
+        savePwdRemember();
+        document.getElementById('lockBox').style.display='none';
+        document.getElementById('editPanel').style.display='block';
+        loadStorage();
+        // 读取相册跳转参数
+        readAlbumParams();
+        renderAll();
+        bindDragUpload();
+        bindImgurDrag();
+        // 监听窗口resize，软键盘弹出后恢复焦点
+        window.addEventListener('resize', handleWindowResize);
+        showToast('解锁成功');
+    }else {
+        showToast("密码错误");
+    }
+}
+
+// 窗口尺寸变化（软键盘弹出/收起）保焦点
+function handleWindowResize() {
+    clearTimeout(resizeTimer);
+    resizeTimer = setTimeout(() => {
+        const active = document.activeElement;
+        if(active && (active.id === 'sharedTitle' || active.id === 'sharedDesc')){
+            active.focus();
+        }
+    }, 100);
+}
+
+// ========== 读取相册index.html传过来的编辑参数 + 自动回填收藏勾选（方案二核心逻辑） ==========
+function readAlbumParams(){
+    const params = new URLSearchParams(location.search);
+    // 兼容完整data JSON传参
+    const dataStr = params.get('data');
+    if(dataStr){
+        try{
+            const item = JSON.parse(decodeURIComponent(dataStr));
+            editFromAlbum = true;
+            albumOriginData = item;
+            // 优化提示栏赋值：拆分标题+单行链接
+            document.getElementById('editModeTip').style.display = 'block';
+            document.getElementById('modeTipText').innerText = "正在编辑已有图文";
+            currentEditImgUrl = item.img || "";
+            document.getElementById('editModeUrl').innerText = currentEditImgUrl;
+            // 点击切换展开收起
+            document.getElementById('editModeUrl').onclick = function(e){
+                e.stopPropagation();
+                toggleEditUrl();
+            };
+
+            document.getElementById('time').value = item.time || '';
+            document.getElementById('tagInput').value = item.tags ? item.tags.join(',') : '';
+            imgurList = [];
+            imgurList.push({
+                url: item.img,
+                title: item.title || '',
+                desc: item.desc || ''
+            });
+            currentImgurIndex = 0;
+            currentLocalIndex = -1;
+
+            // 方案二：本地读取收藏状态，回填勾选框
+            const uid = `${item.img}-${item.time}`;
+            const starList = JSON.parse(localStorage.getItem('album_star') || '[]');
+            const starWrap = document.getElementById('starCheckWrap');
+            const starCheckbox = document.getElementById('editStar');
+            starWrap.style.display = 'flex';
+            starCheckbox.checked = starList.includes(uid);
+            return;
+        }catch(e){
+            console.error('解析完整图文数据失败',e);
+        }
+    }
+    const img = params.get('img');
+    const title = params.get('title');
+    const desc = params.get('desc');
+    const time = params.get('time');
+    const tags = params.get('tags');
+
+    if(!img) return;
+
+    editFromAlbum = true;
+    albumOriginData = {img,title,desc,time,tags};
+
+    // 优化提示栏赋值：拆分标题+单行链接
+    document.getElementById('editModeTip').style.display = 'block';
+    document.getElementById('modeTipText').innerText = "正在编辑已有图文";
+    currentEditImgUrl = img || "";
+    document.getElementById('editModeUrl').innerText = currentEditImgUrl;
+    // 点击切换展开收起
+    document.getElementById('editModeUrl').onclick = function(e){
+        e.stopPropagation();
+        toggleEditUrl();
+    };
+
+    // 填充对应数据
+    document.getElementById('time').value = time || '';
+    document.getElementById('tagInput').value = tags || '';
+
+    // 把相册图片加入图床列表
+    imgurList = [];
+    imgurList.push({
+        url: img,
+        title: title || '',
+        desc: desc || ''
+    });
+    currentImgurIndex = 0;
+    currentLocalIndex = -1;
+
+    // 方案二：本地读取收藏状态，回填勾选框
+    const uid = `${img}-${time}`;
+    const starList = JSON.parse(localStorage.getItem('album_star') || '[]');
+    const starWrap = document.getElementById('starCheckWrap');
+    const starCheckbox = document.getElementById('editStar');
+    starWrap.style.display = 'flex';
+    starCheckbox.checked = starList.includes(uid);
+}
+
+// 拖拽上传图片绑定（带图片格式过滤）
+function bindDragUpload(){
+    const dropWrap = document.getElementById('dropArea');
+    const body = document.body;
+    const allowMime = ["image/jpeg","image/png","image/webp"];
+    [dropWrap, body].forEach(el=>{
+        el.addEventListener('dragover',e=>{e.preventDefault();e.stopPropagation()});
+        el.addEventListener('dragenter',e=>{e.preventDefault();e.stopPropagation()});
+        el.addEventListener('drop',e=>{
+            e.preventDefault();e.stopPropagation();
+            const files = Array.from(e.dataTransfer.files);
+            files.forEach(f=>{
+                if(!allowMime.includes(f.type)){
+                    showToast(`跳过非jpg/png/webp：${f.name}`);
+                    return;
+                }
+                if(fileList.length>=5){showToast("最多 5 张图片");return}
+                let n=f.name;
+                if(!n||n.startsWith("blob:")){
+                    const ext=(f.type.split("/")[1]||"jpg");
+                    n=`IMG_${Date.now()}_${Math.random().toString(36).slice(2,6)}.${ext}`;
+                }
+                let source = "相机";
+if(n.includes("WeiXin")||n.includes("wx")) source="微信";
+if(n.includes("Screenshot")) source="截图";
+if(n.match(/^\d{12,18}\.jpg$/)) source="浏览器";
+
+                fileList.push({file:f,name:n,title:"",desc:"",source});
+            })
+            if(fileList.length) currentLocalIndex = fileList.length - 1;
+            currentImgurIndex = -1;
+            renderAll();
+            saveStorage();
+        })
+    })
+}
+
+/* ===== 本地图片上传核心逻辑（vivo兼容无accept + 前端过滤图片） ===== */
+document.getElementById('imgFile').onchange = function(e){
+    const allowMime = ["image/jpeg","image/png","image/webp"];
+    const selectFiles = Array.from(e.target.files||[]);
+    // 检测vivo单选情况，弹出提示
+    if(selectFiles.length === 1){
+        showToast("vivo提示：长按图片可多选，点右上角文件管理批量勾选");
+    }
+    selectFiles.forEach(f=>{
+        // 仅保留jpg/png/webp，过滤所有其他文件
+        if(!allowMime.includes(f.type)){
+            showToast(`跳过非图片文件：${f.name}`);
+            return;
+        }
+        if(fileList.length>=5){
+            showToast("最多只能添加5张图片");
+            return;
+        }
+        let n=f.name;
+        // 系统丢失真实文件名时才生成随机名，优先保留原图名称
+        if(!n||n.startsWith("blob:")){
+            const ext=(f.type.split("/")[1]||"jpg");
+            n=`IMG_${Date.now()}_${Math.random().toString(36).slice(2,6)}.${ext}`;
+        }
+        // 自动识别图片来源（微信/截图/相机）
+        let source = "相机";
+if(n.includes("WeiXin")||n.includes("wx")) source="微信";
+if(n.includes("Screenshot")) source="截图";
+if(n.match(/^\d{12,18}\.jpg$/)) source="浏览器";
+
+        fileList.push({file:f,name:n,title:"",desc:"",source});
+    });
+    if(fileList.length) currentLocalIndex = fileList.length - 1;
+    currentImgurIndex = -1;
+    renderAll();
+    saveStorage();
+    e.target.value="";
+};
+
+function removeFile(i){
+    if(currentLocalIndex === i){
+        const prev = document.getElementById('previewImg');
+        if(prev.src) URL.revokeObjectURL(prev.src);
+        prev.hidden = true;
+    }
+    fileList.splice(i,1);
+    if(currentLocalIndex>=fileList.length) currentLocalIndex=Math.max(0,fileList.length-1);
+    if(!fileList.length) currentLocalIndex=-1;
+    renderAll();
+    saveStorage();
+}
+function clearAllLocal(){
+    const prev = document.getElementById('previewImg');
+    if(prev.src) URL.revokeObjectURL(prev.src);
+    prev.hidden = true;
+    fileList = [];
+    currentLocalIndex = -1;
+    renderAll();
+    saveStorage();
+    showToast('已清空全部本地图片');
+}
+
+function switchLocal(i){
+    const prev = document.getElementById('previewImg');
+    if(prev.src) URL.revokeObjectURL(prev.src);
+    currentLocalIndex = i;
+    currentImgurIndex = -1;
+    if(fileList[i]&&fileList[i].file){
+        prev.src = URL.createObjectURL(fileList[i].file);
+        prev.hidden = false;
+    }
+    renderAll();
+    setTimeout(()=>document.getElementById('sharedTitle')?.focus(),50);
+}
+
+// 图片拖拽排序
+function bindFileDrag(){
+    const items = document.querySelectorAll('.file-item');
+    items.forEach(item=>{
+        item.setAttribute('draggable','true');
+        item.ondragstart = e=>{
+            dragIndex = Array.from(items).indexOf(item);
+            item.classList.add('dragging');
+        }
+        item.ondragend = ()=>{
+            dragIndex = null;
+            item.classList.remove('dragging');
+            document.querySelectorAll('.file-item').forEach(i=>i.classList.remove('drag-over'));
+        }
+        item.ondragover = e=>{
+            e.preventDefault();
+            item.classList.add('drag-over');
+        }
+        item.ondragleave = ()=>item.classList.remove('drag-over');
+        item.ondrop = e=>{
+            e.preventDefault();
+            const targetIdx = Array.from(items).indexOf(item);
+            if(dragIndex === null || dragIndex === targetIdx) return;
+            const temp = fileList[dragIndex];
+            fileList.splice(dragIndex,1);
+            fileList.splice(targetIdx,0,temp);
+            if(currentLocalIndex === dragIndex) currentLocalIndex = targetIdx;
+            else if(dragIndex < currentLocalIndex && targetIdx >= currentLocalIndex) currentLocalIndex--;
+            else if(dragIndex > currentLocalIndex && targetIdx <= currentLocalIndex) currentLocalIndex++;
+            renderAll();
+            saveStorage();
+        }
+    })
+}
+
+// 图床拖拽排序绑定
+function bindImgurDrag(){
+    const container = document.getElementById('imgurList');
+    const items = container.querySelectorAll('.imgur-item');
+    items.forEach(item=>{
+        item.setAttribute('draggable','true');
+        item.ondragstart = e=>{
+            imgurDragIndex = Array.from(items).indexOf(item);
+            item.classList.add('dragging');
+        }
+        item.ondragend = ()=>{
+            imgurDragIndex = null;
+            item.classList.remove('dragging');
+            container.querySelectorAll('.imgur-item').forEach(i=>i.classList.remove('drag-over'));
+        }
+        item.ondragover = e=>{
+            e.preventDefault();
+            item.classList.add('drag-over');
+        }
+        item.ondragleave = ()=>item.classList.remove('drag-over');
+        item.ondrop = e=>{
+            e.preventDefault();
+            const targetIdx = Array.from(items).indexOf(item);
+            if(imgurDragIndex === null || imgurDragIndex === targetIdx) return;
+            const temp = imgurList[imgurDragIndex];
+            imgurList.splice(imgurDragIndex,1);
+            imgurList.splice(targetIdx,0,temp);
+            if(currentImgurIndex === imgurDragIndex) currentImgurIndex = targetIdx;
+            else if(imgurDragIndex < currentImgurIndex && targetIdx >= currentImgurIndex) currentImgurIndex--;
+            else if(imgurDragIndex > currentImgurIndex && targetIdx <= currentImgurIndex) currentImgurIndex++;
+            renderAll();
+            saveStorage();
+        }
+    })
+}
+
+/* ===== 图床功能 ===== */
+function addImgur(){
+    // 修改上限为20条
+    if(imgurList.length>=20){showToast("最多添加20个图床地址");return;}
+    imgurList.push({url:"", title:"", desc:""});
+    currentImgurIndex = imgurList.length - 1;
+    currentLocalIndex = -1;
+    renderAll();
+    saveStorage();
+}
+// 批量粘贴图床URL
+function batchPasteImgur(){
+    const text = prompt("粘贴多行图床链接，一行一条：");
+    if(!text) return;
+    const lines = text.split(/\r?\n/).map(s=>s.trim()).filter(s=>s.startsWith('http'));
+    let addCnt = 0;
+    // 上限20条
+    lines.forEach(url=>{
+        if(imgurList.length >=20) return;
+        imgurList.push({url, title:"", desc:""});
+        addCnt++;
+    })
+    if(addCnt>0){
+        currentImgurIndex = imgurList.length -1;
+        currentLocalIndex = -1;
+        renderAll();
+        saveStorage();
+        showToast(`成功添加${addCnt}条图床链接`);
+    }else{
+        showToast("未识别有效http链接");
+    }
+}
+function removeImgur(i){
+    imgurList.splice(i,1);
+    if(currentImgurIndex>=imgurList.length) currentImgurIndex=Math.max(0,imgurList.length-1);
+    if(!imgurList.length) currentImgurIndex=-1;
+    renderAll();
+    saveStorage();
+}
+function clearAllImgur(){
+    imgurList = [];
+    currentImgurIndex = -1;
+    renderAll();
+    saveStorage();
+    showToast('已清空全部图床列表');
+}
+function switchImgur(i){
+    currentImgurIndex = i;
+    currentLocalIndex = -1;
+    document.getElementById('previewImg').hidden = true;
+    renderAll();
+    setTimeout(()=>document.getElementById('sharedTitle')?.focus(),50);
+}
+
+// 批量统一填充标题描述
+function batchFillAll(){
+    const t = prompt("统一填充标题（留空不修改）：");
+    const d = prompt("统一填充描述（留空不修改）：");
+    fileList.forEach(f=>{
+        if(t !== null && t.trim()!=='') f.title = t.trim();
+        if(d !== null && d.trim()!=='') f.desc = d.trim();
+    })
+    imgurList.forEach(item=>{
+        if(t !== null && t.trim()!=='') item.title = t.trim();
+        if(d !== null && d.trim()!=='') item.desc = d.trim();
+    })
+    renderAll();
+    saveStorage();
+    showToast("批量填充完成");
+}
+
+/* ===== 渲染页面 ===== */
+function renderAll(){
+    renderFileList();
+    renderImgurList();
+    renderSharedInputs();
+    setTimeout(()=>{bindFileDrag();bindImgurDrag();},10);
+}
+
+function renderFileList(){
+    const wrap=document.getElementById('fileList');
+    wrap.innerHTML=fileList.map((f,i)=>`
+        <div class="file-item ${i===currentLocalIndex?'active':''}" draggable="true" onclick="switchLocal(${i})">
+            <span class="drag-handle">⋮⋮</span>
+            <span class="file-name" title="${f.name}">${f.name} <span style="color:#888">（${f.source}）</span></span>
+            <span class="remove" onclick="event.stopPropagation();removeFile(${i})">✕</span>
+        </div>
+    `).join('');
+}
+
+function renderImgurList(){
+    const wrap=document.getElementById('imgurList');
+    wrap.innerHTML=imgurList.map((item,i)=>{
+        const isHttp = item.url.trim().startsWith('http');
+        return `
+        <div class="imgur-item ${i===currentImgurIndex?'active':''}" draggable="true" onclick="switchImgur(${i})">
+            <span class="imgur-drag-handle">⋮⋮</span>
+            <input placeholder="图床地址 ${i+1}"
+                   class="${item.url && !isHttp ? 'url-error' : ''}"
+                   value="${item.url}"
+                   oninput="imgurList[${i}].url=this.value;saveStorage();"
+                   onclick="event.stopPropagation()">
+            <span class="remove" onclick="event.stopPropagation();removeImgur(${i})"
+                  style="color:#e74c3c;cursor:pointer;font-weight:bold;padding:6px 10px;">✕</span>
+        </div>`
+    }).join('');
+}
+
+function renderSharedInputs(){
+    const wrap=document.getElementById('sharedInputs');
+    if(currentLocalIndex<0 && currentImgurIndex<0){
+        wrap.innerHTML='<p style="color:#999;font-size:13px;">请先选择图片或图床地址</p>';
+        return;
+    }
+    let title="", desc="", label="";
+    if(currentLocalIndex>=0 && fileList[currentLocalIndex]){
+        const f=fileList[currentLocalIndex];
+        label=`📷 正在编辑：第 ${currentLocalIndex+1} 张（${f.name}）`;
+        title=f.title; desc=f.desc;
+    } else if(currentImgurIndex>=0 && imgurList[currentImgurIndex]){
+        const item=imgurList[currentImgurIndex];
+        label=`🌐 正在编辑：图床地址 ${currentImgurIndex+1}`;
+        title=item.title; desc=item.desc;
+    }
+    wrap.innerHTML=`
+        <div style="border:1px solid #eee;padding:12px;border-radius:8px;">
+            <h4>${label}</h4>
+            <input placeholder="标题" value="${title}" id="sharedTitle"
+                   oninput="onSharedTitleInput(this)"
+                   onfocus="inputFocusKeep(this)"
+                   onblur="inputBlurStop()">
+            <div class="count-tip">标题 <span id="titleCount">${title.length}</span> 字</div>
+            <textarea placeholder="正文" id="sharedDesc"
+                      oninput="onSharedDescInput(this)"
+                      onfocus="inputFocusKeep(this)"
+                      onblur="inputBlurStop()">${desc}</textarea>
+            <div class="count-tip">正文 <span id="descCount">${desc.length}</span> 字</div>
+        </div>
+    `;
+}
+
+// 输入框保焦点定时器
+let focusTimer = null;
+function inputFocusKeep(el){
+    clearInterval(focusTimer);
+    // 短时循环保焦点，兼容安卓点击外部失焦
+    focusTimer = setInterval(()=>{
+        if(document.activeElement !== el) el.focus();
+    }, 150);
+}
+function inputBlurStop(){
+    clearInterval(focusTimer);
+}
+
+function onSharedTitleInput(inputEl){
+    const val = inputEl.value;
+    if(currentLocalIndex>=0 && fileList[currentLocalIndex]){
+        fileList[currentLocalIndex].title = val;
+    } else if(currentImgurIndex>=0 && imgurList[currentImgurIndex]){
+        imgurList[currentImgurIndex].title = val;
+    }
+    // 只更新字数，不重绘整个输入框DOM
+    document.getElementById('titleCount').innerText = val.length;
+    saveStorage();
+    // 输入后强制恢复焦点
+    setTimeout(()=>inputEl.focus(), 20);
+}
+function onSharedDescInput(textareaEl){
+    const val = textareaEl.value;
+    if(currentLocalIndex>=0 && fileList[currentLocalIndex]){
+        fileList[currentLocalIndex].desc = val;
+    } else if(currentImgurIndex>=0 && imgurList[currentImgurIndex]){
+        imgurList[currentImgurIndex].desc = val;
+    }
+    // 只更新字数，不重绘整个输入框DOM
+    document.getElementById('descCount').innerText = val.length;
+    saveStorage();
+    // 输入后强制恢复焦点
+    setTimeout(()=>textareaEl.focus(), 20);
+}
+
+/* ===== 生成JSON与Termux命令 ===== */
+function genAll(){
+    if(genLock) return;
+    fillToday();
+    const time=document.getElementById("time").value;
+    const tagStr = document.getElementById('tagInput').value.trim();
+    const tagsArr = tagStr ? tagStr.split(',').map(s=>s.trim()).filter(s=>s) : [];
+    const hasLocal=fileList.length>0;
+    const hasImgur=imgurList.some(i=>i.url.trim().startsWith("http"));
+    if(!hasLocal&&!hasImgur){showToast("请选择图片，或填写图床地址");return;}
+
+    const btn=document.querySelector('.main-gen-btn');
+    btn.classList.add('loading');
+    btn.innerText='生成中...';
+    genLock = true;
+
+    let arr=[];
+    if(hasLocal){
+        fileList.forEach(f=>{
+            arr.push({
+                img:"img/"+f.name,
+                title:f.title,
+                desc:f.desc,
+                time,
+                tags:tagsArr
+            });
+        });
+    }
+    if(hasImgur){
+        imgurList.forEach(item=>{
+            if(item.url.trim().startsWith("http")){
+                arr.push({
+                    img:item.url,
+                    title:item.title,
+                    desc:item.desc,
+                    time,
+                    tags:tagsArr
+                });
+            }
+        });
+    }
+
+    document.getElementById("jsonText").innerText=
+`[\n${arr.map(i=>JSON.stringify(i,null,2)).join(",\n")}\n]`;
+
+    let cmd="cd ~/gitdemo\n";
+    if(hasLocal){
+        const pm={"相机":"Camera","微信":"WeiXin","截图":"Screenshots","浏览器":"browser-photos"};
+        fileList.forEach(f=>{
+            cmd+=`cp -n ~/storage/shared/DCIM/${pm[f.source]||"Camera"}/${f.name} blog/img/\n`;
+        });
+    }
+    cmd += "\ngit pull\nnano blog/data.json && git add -A && (git diff --cached --quiet && echo \"ℹ️ 没有新变动，仅推送已有提交\" || git commit -m \"👌 $(date '+%Y-%m-%d %H:%M')\") && git push origin master\n";
+document.getElementById("cmdText").innerText = cmd;
+
+
+    // 同步更新本地收藏状态
+    if(editFromAlbum && albumOriginData){
+        const uid = `${albumOriginData.img}-${albumOriginData.time}`;
+        const starCheckbox = document.getElementById('editStar');
+        let starArr = JSON.parse(localStorage.getItem('album_star') || '[]');
+        if(starCheckbox.checked){
+            if(!starArr.includes(uid)) starArr.push(uid);
+        }else{
+            starArr = starArr.filter(id => id !== uid);
+        }
+        localStorage.setItem('album_star', JSON.stringify(starArr));
+    }
+
+    setTimeout(()=>{
+        btn.classList.remove('loading');
+        btn.innerText='✅ 已生成';
+        genLock = false;
+    },500);
+    setTimeout(()=>{btn.innerText='生成 JSON + 命令';},1500);
+    showToast('JSON与命令生成完成，收藏状态已同步');
+}
+
+// 下载JSON文件
+function downloadJson(){
+    const text = document.getElementById('jsonText').innerText;
+    const blob = new Blob([text],{type:'application/json'});
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = `blog_data_${new Date().getTime()}.json`;
+    a.click();
+    URL.revokeObjectURL(a.href);
+    showToast("JSON文件已下载");
+}
+
+// JSON语法校验
+function checkJsonValid(){
+    const textarea = document.getElementById('jsonText');
+    const raw = textarea.innerText.trim();
+    if(!raw){
+        showToast('JSON区域为空，请先生成数据');
+        return;
+    }
+    try{
+        JSON.parse(raw);
+        showToast('✅ JSON格式完全正常');
+    }catch(e){
+        const errMsg = e.message.substring(0,35);
+        showToast('❌ JSON错误：' + errMsg);
+    }
+}
+
+// 复制剪贴板封装
+async function copyCmd(){
+    try{
+        await navigator.clipboard.writeText(document.getElementById("cmdText").innerText);
+        showToast('Termux命令复制成功');
+    }catch(e){showToast('复制失败，请手动选中复制')}
+}
+async function copyJson(){
+    try{
+        await navigator.clipboard.writeText(document.getElementById("jsonText").innerText);
+        showToast('JSON文本复制成功');
+    }catch(e){showToast('复制失败，请手动选中复制')}
+}
+
+// 页面初始化加载
+window.onload = function(){
+    loadTheme();
+    loadPwdRemember();
+}
+</script>
+</body>
+</html>

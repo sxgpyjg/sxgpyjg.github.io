@@ -1,0 +1,51 @@
+# Site settings
+title: JGY
+subtitle: 前端开发工程师
+url: "https://sxgpyjg.github.io"
+
+# Author
+author: sxgpyjg
+email: sxgpyjg@126.com
+
+# Social
+github_username: sxgpyjg
+twitter_username: sxgpyjg126
+facebook_username: sxgpyjg.water
+weibo_uid: 6037610109
+zhihu_username: sxgpyjg
+linkedin_username: sxgpyjg
+
+# Analytics
+baidu_analytics_id: ca17a2a9b68ee5bd7a2334d52e11381d
+google_analytics_id: UA-128880281-1
+
+# Build settings
+markdown: kramdown
+kramdown:
+  input: GFM
+  syntax_highlighter: rouge
+
+# Permalinks
+permalink: /:year/:month/:day/:title/
+
+# Collections (Articles)
+collections:
+  articles:
+    output: true
+    permalink: /:title/
+
+# Directories
+categories_dir: categories/
+tags_dir: tags/
+
+# Excerpt
+excerpt_separator: "\n\n\n\n"
+
+# Pagination
+plugins:
+  - jekyll-paginate
+paginate: 3
+paginate_path: "/page/:num/"
+
+# Theme
+theme: jekyll-theme-cayman

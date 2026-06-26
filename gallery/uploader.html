@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>撰写助手 · 上传版</title>
+<style>
+body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI";background:#f5f7fa;margin:0;padding:20px}
+.container{max-width:900px;margin:auto;background:#fff;padding:20px;border-radius:12px;box-shadow:0 4px 20px rgba(0,0,0,.08)}
+input,textarea,button{padding:10px;border-radius:8px;border:1px solid #ddd;width:100%;margin-top:10px;font-size:15px}
+button{background:#4f46e5;color:#fff;border:none;cursor:pointer}
+button:hover{background:#4338ca}
+.preview img{max-width:120px;margin:5px;border-radius:8px}
+.section{margin-top:20px}
+pre{background:#1e1e1e;color:#d4d4d4;padding:15px;border-radius:8px;overflow:auto}
+.hidden{display:none}
+.success{color:green;margin-top:10px}
+.error{color:red;margin-top:10px}
+</style>
+</head>
+<body>
+
+<div class="container" id="loginBox">
+  <h2>🔒 请输入密码</h2>
+  <input id="pwd" type="password" placeholder="密码">
+  <button onclick="checkPwd()">进入</button>
+</div>
+
+<div class="container hidden" id="mainBox">
+  <h2>📝 撰写助手（支持上传）</h2>
+
+  <div class="section">
+    <label>🔑 GitHub Token（仅本次有效，关页即清）</label>
+    <input id="token" type="password" placeholder="ghp_xxxxxxxxxxxx">
+  </div>
+
+  <div class="section">
+    <label>📁 图片存放目录（仓库内）</label>
+    <input id="folder" value="photo">
+  </div>
+
+  <div class="section">
+    <button onclick="document.getElementById('imgs').click()">🖼️ 选择图片</button>
+    <input type="file" id="imgs" multiple accept="image/*" style="display:none">
+    <div id="preview" class="preview"></div>
+  </div>
+
+  <div class="section">
+    <label>📄 正文</label>
+    <textarea id="text" rows="8" placeholder="写点什么..."></textarea>
+  </div>
+
+  <div class="section">
+    <label>💻 代码</label>
+    <textarea id="code" rows="6" placeholder="贴代码..."></textarea>
+  </div>
+
+  <button onclick="uploadImages()">☁️ 上传图片到 GitHub</button>
+  <button onclick="generate()">✨ 生成 Markdown</button>
+  <button onclick="copy()">📋 一键复制</button>
+  <button onclick="download()">⬇️ 下载</button>
+
+  <pre id="output"></pre>
+  <div id="msg"></div>
+</div>
+
+<script>
+const REPO = "sxgpyjg/sxgpyjg.github.io";
+const BRANCH = "master";
+
+function checkPwd(){
+  if(document.getElementById("pwd").value === "yjg2025"){
+    document.getElementById("loginBox").classList.add("hidden");
+    document.getElementById("mainBox").classList.remove("hidden");
+  } else alert("密码错误");
+}
+
+let files = [];
+let uploaded = [];
+
+document.getElementById("imgs").onchange = e => {
+  [...e.target.files].forEach(f => {
+    files.push(f);
+    const r = new FileReader();
+    r.onload = ev => {
+      const img = document.createElement("img");
+      img.src = ev.target.result;
+      document.getElementById("preview").appendChild(img);
+    };
+    r.readAsDataURL(f);
+  });
+};
+
+async function uploadImages(){
+  const token = document.getElementById("token").value.trim();
+  const folder = document.getElementById("folder").value.trim();
+  if(!token){alert("请填写 GitHub Token");return;}
+  uploaded = [];
+  for(const f of files){
+    const b64 = await toBase64(f);
+    const res = await fetch(`https://api.github.com/repos/${REPO}/contents/${folder}/${f.name}`,{
+      method:"PUT",
+      headers:{"Authorization":"token "+token,"Content-Type":"application/json"},
+      body:JSON.stringify({
+        message:"upload image: "+f.name,
+        content:b64.split(",")[1],
+        branch:BRANCH
+      })
+    });
+    if(res.ok){
+      uploaded.push(`/${folder}/${f.name}`);
+      msg("✅ 上传成功："+f.name,"success");
+    } else {
+      msg("❌ 上传失败："+f.name,"error");
+    }
+  }
+}
+
+function generate(){
+  let md = "---\nlayout: post\ntitle: \"文章标题\"\ndate: "+new Date().toISOString().replace("T"," ").slice(0,-5)+" +08:00\ncategories: 拾光 随笔 时光存档\ntags: 风正扬\n---\n\n";
+  md += "📝 正文\n\n"+document.getElementById("text").value+"\n\n";
+  md += "💻 代码\n\n```text\n"+document.getElementById("code").value+"\n```\n\n";
+  md += "🖼️ 图片\n\n";
+  uploaded.forEach(u => md += `![图片](${u})\n`);
+  document.getElementById("output").textContent = md;
+}
+
+function copy(){
+  navigator.clipboard.writeText(document.getElementById("output").textContent);
+  alert("已复制到剪贴板");
+}
+
+function download(){
+  const blob = new Blob([document.getElementById("output").textContent],{type:"text/plain"});
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = "post.md";
+  a.click();
+}
+
+function toBase64(file){
+  return new Promise(r => {
+    const fr = new FileReader();
+    fr.onload = r;
+    fr.readAsDataURL(file);
+  });
+}
+
+function msg(t,c){
+  const d = document.getElementById("msg");
+  d.className = c;
+  d.textContent = t;
+}
+</script>
+</body>
+</html>
+
